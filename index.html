@@ -34,51 +34,41 @@
 
   <button id="talk">Press to Talk</button>
 
-  <!-- Load the Vapi Web SDK (version pinned) -->
-<script src="https://esm.sh/@vapi-ai/web@2.4.0/dist/vapi.js"></script>
+  <!-- ✅ Load the SDK properly as a JavaScript module -->
+  <script type="module">
+    import Vapi from "https://esm.sh/@vapi-ai/web@2.4.0";
 
-  <!-- Wire up your button -->
-  <script>
-    // Your keys
     const PUBLIC_KEY   = "fc5f6fc4-d5da-4bfe-8b02-6035430c1d92";
     const ASSISTANT_ID = "567a070a-9e4a-478c-9218-ab2e16bce29b";
 
-    // Wait until SDK is present (just in case)
-    (function ready(fn){
-      if (window.Vapi) return fn();
-      const iv = setInterval(() => { if (window.Vapi){ clearInterval(iv); fn(); } }, 50);
-      setTimeout(() => clearInterval(iv), 5000);
-    })(function attach(){
-      const vapi = new Vapi(PUBLIC_KEY);
-      const btn  = document.getElementById("talk");
-      if (!btn) return;
+    const vapi = new Vapi(PUBLIC_KEY);
+    const btn  = document.getElementById("talk");
+    let inCall = false;
+    const set = t => btn.textContent = t;
 
-      let inCall = false;
-      const set = t => btn.textContent = t;
-
-      btn.onclick = async () => {
-        btn.disabled = true;
-        try {
-          if (!inCall) {
-            set("Connecting...");
-            await vapi.start(ASSISTANT_ID);
-            inCall = true; set("End");
-          } else {
-            await vapi.stop();
-            inCall = false; set("Press to Talk");
-          }
-        } catch (e) {
-          console.error(e);
+    btn.onclick = async () => {
+      btn.disabled = true;
+      try {
+        if (!inCall) {
+          set("Connecting...");
+          await vapi.start(ASSISTANT_ID);
+          inCall = true; set("End");
+        } else {
+          await vapi.stop();
           inCall = false; set("Press to Talk");
-        } finally {
-          btn.disabled = false;
         }
-      };
+      } catch (e) {
+        console.error(e);
+        inCall = false; set("Press to Talk");
+      } finally {
+        btn.disabled = false;
+      }
+    };
 
-      vapi.on("call-start", () => { inCall = true;  set("End"); });
-      vapi.on("call-end",   () => { inCall = false; set("Press to Talk"); });
-      vapi.on("error",      () => { inCall = false; set("Press to Talk"); });
-    });
+    vapi.on("call-start", () => { inCall = true;  set("End"); });
+    vapi.on("call-end",   () => { inCall = false; set("Press to Talk"); });
+    vapi.on("error",      () => { inCall = false; set("Press to Talk"); });
   </script>
+
 </body>
 </html>
