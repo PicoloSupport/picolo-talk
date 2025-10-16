@@ -5,59 +5,46 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Talk to Picolo</title>
   <style>
-    :root { color-scheme: dark; }
-
     html, body {
       height: 100%;
       margin: 0;
-      background: #2f2f2f; /* dark gray to match Framer card */
+      background: #363636;  /* matches your Framer section */
       display: grid;
       place-items: center;
       font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
     }
 
     #talk {
-      cursor: pointer;
-      padding: 14px 40px;
-      border-radius: 9999px;
-      background: linear-gradient(135deg, #dc7a5b, #e48b6e); /* your orange tone */
-      color: #fff;
-      font-weight: 600;
-      font-size: 17px;
-      letter-spacing: 0.25px;
+      background: #ffffff;
+      color: #111111;
       border: none;
-      box-shadow:
-        0 0 25px rgba(220, 122, 91, 0.5),
-        0 4px 15px rgba(0, 0, 0, 0.4);
-      transition: all 0.25s ease;
+      border-radius: 9999px;
+      padding: 14px 38px;
+      font-size: 17px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
     }
 
     #talk:hover {
-      transform: translateY(-2px);
-      box-shadow:
-        0 0 40px rgba(220, 122, 91, 0.65),
-        0 6px 20px rgba(0, 0, 0, 0.45);
+      background: #f3f3f3;
+      transform: translateY(-1px);
     }
 
     #talk:active {
+      background: #e9e9e9;
       transform: translateY(0);
-      box-shadow:
-        0 0 20px rgba(220, 122, 91, 0.4),
-        0 3px 10px rgba(0, 0, 0, 0.35);
     }
 
     #talk.connecting {
-      background: #444;
-      color: #aaa;
+      background: #cccccc;
+      color: #555555;
       cursor: wait;
-      box-shadow: none;
     }
 
     #talk.end {
-      background: #fff;
-      color: #111;
-      font-weight: 600;
-      box-shadow: 0 0 25px rgba(255, 255, 255, 0.2);
+      background: #111111;
+      color: #ffffff;
     }
   </style>
 </head>
@@ -75,7 +62,7 @@
     const btn  = document.getElementById("talk");
     let inCall = false;
 
-    const set = (text, cls) => {
+    const set = (text, cls = "") => {
       btn.textContent = text;
       btn.className = cls;
     };
@@ -91,20 +78,20 @@
         } else {
           await vapi.stop();
           inCall = false;
-          set("Push to Talk", "");
+          set("Push to Talk");
         }
       } catch (e) {
         console.error(e);
         inCall = false;
-        set("Push to Talk", "");
+        set("Push to Talk");
       } finally {
         btn.disabled = false;
       }
     };
 
-    vapi.on("call-start", () => { inCall = true;  set("End Conversation", "end"); });
-    vapi.on("call-end",   () => { inCall = false; set("Push to Talk", ""); });
-    vapi.on("error",      () => { inCall = false; set("Push to Talk", ""); });
+    vapi.on("call-start", () => { inCall = true; set("End Conversation", "end"); });
+    vapi.on("call-end",   () => { inCall = false; set("Push to Talk"); });
+    vapi.on("error",      () => { inCall = false; set("Push to Talk"); });
   </script>
 
 </body>
