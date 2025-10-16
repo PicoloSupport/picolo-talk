@@ -34,74 +34,51 @@
 
   <button id="talk">Press to Talk</button>
 
-  <!-- Robust loader: tries multiple CDN paths, then wires the button -->
+  <!-- Load the Vapi Web SDK (version pinned) -->
+  <script src="https://cdn.jsdelivr.net/npm/@vapi-ai/web@2.4.0/dist/vapi.js"></script>
+
+  <!-- Wire up your button -->
   <script>
-    (async () => {
-      // 1) Load the Vapi Web SDK (try a few likely paths)
-      const cdnCandidates = [
-        "https://cdn.jsdelivr.net/npm/@vapi-ai/web@2.4.0/dist/vapi.js",
-        "https://cdn.jsdelivr.net/npm/@vapi-ai/web/dist/vapi.js",
-        "https://unpkg.com/@vapi-ai/web@2.4.0/dist/vapi.js",
-        "https://unpkg.com/@vapi-ai/web/dist/vapi.js",
-        "https://unpkg.com/@vapi-ai/web/dist/index.min.js",
-        "https://cdn.jsdelivr.net/npm/@vapi-ai/web/dist/index.min.js"
-      ];
+    // Your keys
+    const PUBLIC_KEY   = "fc5f6fc4-d5da-4bfe-8b02-6035430c1d92";
+    const ASSISTANT_ID = "567a070a-9e4a-478c-9218-ab2e16bce29b";
 
-      function loadScript(src) {
-        return new Promise((resolve, reject) => {
-          const s = document.createElement("script");
-          s.src = src;
-          s.onload = () => resolve(src);
-          s.onerror = () => reject(new Error("Failed: " + src));
-          document.head.appendChild(s);
-        });
-      }
-
-      let loadedFrom = null;
-      for (const url of cdnCandidates) {
-        try { loadedFrom = await loadScript(url); break; }
-        catch (_) {}
-      }
-      if (!loadedFrom || !window.Vapi) {
-        console.error("Could not load Vapi Web SDK from any CDN.");
-        document.getElementById("talk").disabled = true;
-        document.getElementById("talk").textContent = "Voice SDK failed to load";
-        return;
-      }
-
-      // 2) Your keys
-      const PUBLIC_KEY   = "fc5f6fc4-d5da-4bfe-8b02-6035430c1d92";
-      const ASSISTANT_ID = "567a070a-9e4a-478c-9218-ab2e16bce29b";
-
-      // 3) Wire the button
-      const vapi = new window.Vapi(PUBLIC_KEY);
+    // Wait until SDK is present (just in case)
+    (function ready(fn){
+      if (window.Vapi) return fn();
+      const iv = setInterval(() => { if (window.Vapi){ clearInterval(iv); fn(); } }, 50);
+      setTimeout(() => clearInterval(iv), 5000);
+    })(function attach(){
+      const vapi = new Vapi(PUBLIC_KEY);
       const btn  = document.getElementById("talk");
+      if (!btn) return;
+
       let inCall = false;
-      const setText = (t) => btn.textContent = t;
+      const set = t => btn.textContent = t;
 
       btn.onclick = async () => {
         btn.disabled = true;
         try {
           if (!inCall) {
-            setText("Connecting...");
+            set("Connecting...");
             await vapi.start(ASSISTANT_ID);
-            inCall = true; setText("End");
+            inCall = true; set("End");
           } else {
             await vapi.stop();
-            inCall = false; setText("Press to Talk");
+            inCall = false; set("Press to Talk");
           }
         } catch (e) {
           console.error(e);
-          inCall = false; setText("Press to Talk");
+          inCall = false; set("Press to Talk");
         } finally {
           btn.disabled = false;
         }
       };
 
-      vapi.on("call-start", () => { inCall = true;  setText("End"); });
-      vapi.on("call-end",   () => { inCall = false; setText("Press to Talk"); });
-      vapi.on("error",      () => { inCall = false; setText("Press to Talk"); });
-    })();
+      vapi.on("call-start", () => { inCall = true;  set("End"); });
+      vapi.on("call-end",   () => { inCall = false; set("Press to Talk"); });
+      vapi.on("error",      () => { inCall = false; set("Press to Talk"); });
+    });
   </script>
 </body>
 </html>
