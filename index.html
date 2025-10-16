@@ -6,9 +6,8 @@
   <title>Talk to Picolo</title>
   <style>
     :root { color-scheme: dark; }
-    html, body { height: 100%; }
+    html, body { height: 100%; margin: 0; }
     body {
-      margin: 0;
       background: #111;
       color: #fff;
       font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
@@ -16,25 +15,48 @@
       place-items: center;
       padding: 0 16px;
     }
-    button {
+
+    #talk {
       cursor: pointer;
-      padding: 12px 22px;
+      padding: 14px 32px;
       border-radius: 9999px;
+      background: linear-gradient(135deg, #ef7d57, #ff9a76);
+      color: #fff;
+      font-weight: 600;
+      font-size: 17px;
+      letter-spacing: 0.3px;
+      border: none;
+      box-shadow: 0 6px 18px rgba(239, 125, 87, 0.4);
+      transition: all 0.2s ease;
+    }
+
+    #talk:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 25px rgba(239, 125, 87, 0.5);
+    }
+
+    #talk:active {
+      transform: translateY(0);
+      box-shadow: 0 4px 10px rgba(239, 125, 87, 0.3);
+    }
+
+    #talk.connecting {
+      background: #444;
+      color: #aaa;
+      cursor: wait;
+    }
+
+    #talk.end {
       background: #fff;
       color: #111;
-      font-weight: 600;
-      font-size: 16px;
-      line-height: 1;
-      border: 1px solid rgba(0,0,0,0.12);
-      box-shadow: 0 6px 18px rgba(0,0,0,0.18);
+      box-shadow: 0 6px 18px rgba(255, 255, 255, 0.2);
     }
   </style>
 </head>
 <body>
 
-  <button id="talk">Press to Talk</button>
+  <button id="talk">Push to Talk</button>
 
-  <!-- ✅ Load the SDK properly as a JavaScript module -->
   <script type="module">
     import Vapi from "https://esm.sh/@vapi-ai/web@2.4.0";
 
@@ -44,30 +66,36 @@
     const vapi = new Vapi(PUBLIC_KEY);
     const btn  = document.getElementById("talk");
     let inCall = false;
-    const set = t => btn.textContent = t;
+    const set = (text, cls) => {
+      btn.textContent = text;
+      btn.className = cls;
+    };
 
     btn.onclick = async () => {
       btn.disabled = true;
       try {
         if (!inCall) {
-          set("Connecting...");
+          set("Connecting...", "connecting");
           await vapi.start(ASSISTANT_ID);
-          inCall = true; set("End");
+          inCall = true;
+          set("End Conversation", "end");
         } else {
           await vapi.stop();
-          inCall = false; set("Press to Talk");
+          inCall = false;
+          set("Push to Talk", "");
         }
       } catch (e) {
         console.error(e);
-        inCall = false; set("Press to Talk");
+        inCall = false;
+        set("Push to Talk", "");
       } finally {
         btn.disabled = false;
       }
     };
 
-    vapi.on("call-start", () => { inCall = true;  set("End"); });
-    vapi.on("call-end",   () => { inCall = false; set("Press to Talk"); });
-    vapi.on("error",      () => { inCall = false; set("Press to Talk"); });
+    vapi.on("call-start", () => { inCall = true;  set("End Conversation", "end"); });
+    vapi.on("call-end",   () => { inCall = false; set("Push to Talk", ""); });
+    vapi.on("error",      () => { inCall = false; set("Push to Talk", ""); });
   </script>
 
 </body>
