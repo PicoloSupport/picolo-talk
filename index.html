@@ -78,20 +78,20 @@
         } else {
           await vapi.stop();
           inCall = false;
-          set("Push to Talk");
+          set("Push to talk");
         }
       } catch (e) {
         console.error(e);
         inCall = false;
-        set("Push to Talk");
+        set("Push to talk");
       } finally {
         btn.disabled = false;
       }
     };
 
     vapi.on("call-start", () => { inCall = true; set("End Conversation", "end"); });
-    vapi.on("call-end",   () => { inCall = false; set("Push to Talk"); });
-    vapi.on("error",      () => { inCall = false; set("Push to Talk"); });
+    vapi.on("call-end",   () => { inCall = false; set("Push to talk"); });
+    vapi.on("error",      () => { inCall = false; set("Push to talk"); });
   </script>
 
 </body>
